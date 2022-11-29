@@ -17,12 +17,14 @@ library(RSQLite)
 ```{r}
 # Relevant variables
 vars <- c(
+    # id
+    "pid",
     # individual variables
-    "pid", "health", "education",
-    "gender", "birth_year", "relationship",
+    "health", "education",
+    "sex", "birth_year", "relationship",
     "income_satisfaction", "swb",
-    # house hold variables "hh_einkommen",
-    "hh_children", "time", "hid",
+    # house hold variables
+    "hh_income", "hh_children", "time", "hid",
     # weather variables
     "tavg", "tmin", "tmax", "prcp",
     "snow", "wdir", "wspd", "wpgt",
