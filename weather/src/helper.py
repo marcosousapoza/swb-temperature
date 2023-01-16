@@ -3,12 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm.notebook import tqdm
+from os import listdir
 
 ##########################
 # READING DATA FUNCTIONS #
 ##########################
 
-def get_station_data(dirpath:str, ids:list[str], bar=True) -> pd.DataFrame:
+def read_station_data(dirpath:str, ids:list[str], bar=True) -> pd.DataFrame:
 
     # the concatonated dataframe variable
     rdf = pd.DataFrame()
@@ -38,6 +39,42 @@ def get_station_data(dirpath:str, ids:list[str], bar=True) -> pd.DataFrame:
     return rdf
 
 
+def read_nuts_weather_data(dirpath:str, bar=True) -> pd.DataFrame:
+
+    # the concatonated dataframe variable
+    rdf = pd.DataFrame()
+
+    # read all the filenames
+    ids = listdir(dirpath)
+
+    # create progress bar
+    if bar:
+        pbar = tqdm(ids, leave=False)
+    else:
+        pbar = ids
+
+    # read files
+    for i in pbar:
+        filename = f'{dirpath}/{i}'
+
+        # set discription of progress bar
+        if bar:
+            pbar.set_description(f"Reading {filename}")
+
+        new = pd.read_csv(filename)
+        new['NUTS_CODE'] = i.replace('.csv', '')
+
+        # read file
+        if rdf.empty:
+            rdf = new
+        else:
+            rdf = pd.concat([rdf, new], ignore_index=True, axis=0)
+    
+    rdf['time'] = pd.to_datetime(rdf['time'])
+    return rdf
+
+
+
 def get_nuts_weather_data(infofile:str, dirpath:str, nutslvl:int, code:str=None, bar=True) -> pd.DataFrame:
     
     # read the station info
@@ -53,7 +90,7 @@ def get_nuts_weather_data(infofile:str, dirpath:str, nutslvl:int, code:str=None,
 
     # read station data
     ids = stations['id'].tolist()
-    data = get_station_data(dirpath, ids, bar=bar)
+    data = read_station_data(dirpath, ids, bar=bar)
     data['id'] = data['id'].astype(str)
 
     # join the dataframes
@@ -85,7 +122,7 @@ def get_point_weather_data(point:tuple[float, float], max_distance:float|int) ->
     stations['weight'] = 1 / stations['distance']
 
     # get the station data
-    data = get_station_data(list(stations['id']))
+    data = read_station_data(list(stations['id']))
     data.join(stations, on='id', how='left')
     
     # group all the stations by date

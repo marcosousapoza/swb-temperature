@@ -4,8 +4,42 @@ output: html_notebook
 ---
 
 # Data Analysis
-For this analysis fixed effects regression is used. This kind of analysis allows us to control for time invariant unobservables.
-An important feature as now we can control for (for example) personal characteristical trait biases from the analysis, or some "city-effect".
+For this analysis fixed effects regression is used. 
+This kind of analysis allows us to control for time invariant unobservables.
+An important feature as now we can control for (for example) personal characteristical 
+trait biases from the analysis, or some "city-effect".
+
+In the following is the mathematical specification:
+
+> $Y = X\beta + \epsilon$
+> 
+> where:
+> 
+> $Y$ is an $n \times 1$ vector of the dependent variable
+> 
+> $X$ is an $n \times k$ matrix of the independent variables, with the first column being a vector of ones for the intercept
+> 
+> $\beta$ is a $k \times 1$ vector of the coefficients of the independent variables
+> 
+> $\epsilon$ is an $n \times 1$ vector of the error term
+> 
+> In a fixed effects regression model, we need to control for the unobserved or unmeasured variables that may be correlated with the independent variables and that are fixed across groups, we can include a set of dummy variables for each group in the model.
+> 
+> Let's say we have $g$ groups, we can create a matrix $Z$ of dimension $n \times g$ where $Z_{i,j}=1$ if observation $i$ belongs to group $j$ and 0 otherwise.
+> 
+> We can then include this matrix $Z$ to our original matrix $X$ to create a new matrix $X'$ with dimension $n \times (k+g)$, where k is the number of independent variables.
+> 
+> The new equation of the fixed effects model can be represented as:
+> 
+> $Y = X'\beta' + \epsilon$
+> 
+> $X' = \begin{bmatrix} X & Z \end{bmatrix}$
+> 
+> $\beta' = \begin{bmatrix} \beta \ \beta_g \end{bmatrix}$
+> 
+> Where $\beta_g$ is a $g \times 1$ vector of the group-specific intercepts.
+> 
+> In this way, the matrix $Z$ allows us to control for the fixed effects of the groups by including group-specific intercepts in the model.
 
 ## Data
 The subjective well-begin (SWB) data was collected by the german socio-economic panel (SEOP). The weather data stemms from the open-source 
@@ -13,38 +47,4 @@ project called meteostat. The two of them are combined into a single data set us
 ```{r}
 # importing libraries
 library(RSQLite)
-```
-```{r}
-# Relevant variables
-vars <- c(
-    # id
-    "pid",
-    # individual variables
-    "health", "education",
-    "sex", "birth_year", "relationship",
-    "income_satisfaction", "swb",
-    # house hold variables
-    "hh_income", "hh_children", "time", "hid",
-    # weather variables
-    "tavg", "tmin", "tmax", "prcp",
-    "snow", "wdir", "wspd", "wpgt",
-    "pres", "tsun",
-    # location id
-    "sloc"
-)
-
-# Create connection to database
-conn <- dbConnect(RSQLite::SQLite(), "./prod/data.db")
-
-# Load required data into df
-df <- dbGetQuery(
-    conn,
-    sprintf('SELECT %s FROM "1_data" LIMIT 10;', paste(vars, collapse = ", "))
-)
-```
-There are still quite some NaN values which need to be treated.
-
-
-```{r}
-
 ```
