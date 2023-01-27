@@ -17,17 +17,22 @@ In the following is the mathematical specification:
 > 
 > $Y$ is an $n \times 1$ vector of the dependent variable
 > 
-> $X$ is an $n \times k$ matrix of the independent variables, with the first column being a vector of ones for the intercept
+> $X$ is an $n \times k$ matrix of the independent variables, 
+> with the first column being a vector of ones for the intercept
 > 
 > $\beta$ is a $k \times 1$ vector of the coefficients of the independent variables
 > 
 > $\epsilon$ is an $n \times 1$ vector of the error term
 > 
-> In a fixed effects regression model, we need to control for the unobserved or unmeasured variables that may be correlated with the independent variables and that are fixed across groups, we can include a set of dummy variables for each group in the model.
+> In a fixed effects regression model, we need to control for the unobserved or 
+> unmeasured variables that may be correlated with the independent variables and that are fixed across groups, 
+> we can include a set of dummy variables for each group in the model.
 > 
-> Let's say we have $g$ groups, we can create a matrix $Z$ of dimension $n \times g$ where $Z_{i,j}=1$ if observation $i$ belongs to group $j$ and 0 otherwise.
+> Let's say we have $g$ groups, we can create a matrix $Z$ of dimension $n \times g$ where $Z_{i,j}=1$ 
+> if observation $i$ belongs to group $j$ and 0 otherwise.
 > 
-> We can then include this matrix $Z$ to our original matrix $X$ to create a new matrix $X'$ with dimension $n \times (k+g)$, where k is the number of independent variables.
+> We can then include this matrix $Z$ to our original matrix $X$ to create a new matrix $X'$ 
+> with dimension $n \times (k+g)$, where k is the number of independent variables.
 > 
 > The new equation of the fixed effects model can be represented as:
 > 
@@ -46,5 +51,29 @@ The subjective well-begin (SWB) data was collected by the german socio-economic 
 project called meteostat. The two of them are combined into a single data set used for this analysis. In the following all the variables are listed:
 ```{r}
 # importing libraries
-library(RSQLite)
+library(plm)
+library(zoo)
+```
+
+```{r}
+Y <- "plh0182"
+X <- c("tsun", 'prcp', 'tavg_0', 'tavg_1', 'tavg_2', 'tavg_3', 'tavg_4', 'tavg_5', 'tavg_6', 'tavg_7', 'age', 'sex', 'hlc0005_h')
+FE <- c('bula_h', 'time', 'pid')
+```
+
+
+```{r}
+df <- read.csv("./prod/data.csv")
+df <- df[df$bula_h == 11, ]
+df$time <- as.yearmon(df$time, format="%Y-%m")
+df <- pdata.frame(df, index=c("pid", "time"))
+df
+```
+
+```{r}
+femodel <- plm(plh0182 ~ sex + age + hlc0005_h + tsun + prcp + wspd + pres + tavg_0 + tavg_1 + tavg_2 + tavg_3 + tavg_4 + tavg_5 + tavg_6 + tavg_7, data=df, model="within")
+summary(femodel)
+```
+```{r}
+summary(fixef(femodel, effect='group'))
 ```
